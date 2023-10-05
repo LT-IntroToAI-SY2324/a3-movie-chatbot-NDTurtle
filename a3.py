@@ -43,7 +43,6 @@ def get_actors(movie: Tuple[str, str, int, List[str]]) -> List[str]:
 # according to the action and the argument. It is important that each function returns a
 # list of the answer(s) and not just the answer itself.
 
-
 def title_by_year(matches: List[str]) -> List[str]:
     """Finds all movies made in the passed in year
 
@@ -54,12 +53,16 @@ def title_by_year(matches: List[str]) -> List[str]:
     Returns:
         a list of movie titles made in the passed in year
     """
-    result = []
-    for movie in movie_db:
-        if int(matches[0]) == get_year(movie):
-            result.append(get_title(movie))
-    return result
+    try:
+        target_year = int(matches[0])
 
+        # Use list comprehension to filter movies by the target year
+        movies_in_year = [get_title(movie) for movie in movie_db if get_year(movie) == target_year]
+
+        return movies_in_year
+
+    except ValueError:
+        return []  # If the year is not a valid integer, return an empty list
 
 def title_by_year_range(matches: List[str]) -> List[str]:
     """Finds all movies made in the passed in year range
@@ -74,7 +77,14 @@ def title_by_year_range(matches: List[str]) -> List[str]:
         a list of movie titles made during those years, inclusive (meaning if you pass
         in ["1991", "1994"] you will get movies made in 1991, 1992, 1993 & 1994)
     """
-    pass
+    start_year = int(matches[0])
+    end_year = int(matches[1])
+    result = []
+    for movie in movie_db:
+        movie_year = get_year(movie)
+        if start_year <= movie_year <= end_year:
+            result.append(get_title(movie))
+    return result
 
 
 def title_before_year(matches: List[str]) -> List[str]:
@@ -88,7 +98,13 @@ def title_before_year(matches: List[str]) -> List[str]:
         a list of movie titles made before the passed in year, exclusive (meaning if you
         pass in 1992 you won't get any movies made that year, only before)
     """
-    pass
+    target_year = int(matches[0])
+    result = []
+    for movie in movie_db:
+        movie_year = get_year(movie)
+        if movie_year < target_year:
+            result.append(get_title(movie))
+    return result
 
 
 def title_after_year(matches: List[str]) -> List[str]:
@@ -100,9 +116,15 @@ def title_after_year(matches: List[str]) -> List[str]:
 
     Returns:
         a list of movie titles made after the passed in year, exclusive (meaning if you
-        pass in 1992 you won't get any movies made that year, only after)
+            pass in 1992 you won't get any movies made that year, only after)
     """
-    pass
+    target_year = int(matches[0])
+    result = []
+    for movie in movie_db:
+        movie_year = get_year(movie)
+        if movie_year > target_year:
+            result.append(get_title(movie))
+    return result
 
 
 def director_by_title(matches: List[str]) -> List[str]:
@@ -114,7 +136,12 @@ def director_by_title(matches: List[str]) -> List[str]:
     Returns:
         a list of 1 string, the director of the movie
     """
-    pass
+    target_title = matches[0]
+    result = []
+    for movie in movie_db:
+        if target_title.lower() == get_title(movie).lower():
+            result.append(get_director(movie))
+    return result
 
 
 def title_by_director(matches: List[str]) -> List[str]:
@@ -126,7 +153,12 @@ def title_by_director(matches: List[str]) -> List[str]:
     Returns:
         a list of movies titles directed by the passed in director
     """
-    pass
+    target_director = matches[0].lower()
+    result = []
+    for movie in movie_db:
+        if target_director == get_director(movie).lower():
+            result.append(get_title(movie))
+    return result
 
 
 def actors_by_title(matches: List[str]) -> List[str]:
@@ -138,7 +170,12 @@ def actors_by_title(matches: List[str]) -> List[str]:
     Returns:
         a list of actors who acted in the passed in title
     """
-    pass
+    target_title = matches[0]
+    result = []
+    for movie in movie_db:
+        if target_title.lower() == get_title(movie).lower():
+            result.extend(get_actors(movie))
+    return result
 
 
 def year_by_title(matches: List[str]) -> List[int]:
@@ -150,7 +187,12 @@ def year_by_title(matches: List[str]) -> List[int]:
     Returns:
         a list of one item (an int), the year that the movie was made
     """
-    pass
+    target_title = matches[0]
+    result = []
+    for movie in movie_db:
+        if target_title.lower() == get_title(movie).lower():
+            result.append(get_year(movie))
+    return result
 
 
 def title_by_actor(matches: List[str]) -> List[str]:
@@ -162,7 +204,13 @@ def title_by_actor(matches: List[str]) -> List[str]:
     Returns:
         a list of movie titles that the actor acted in
     """
-    pass
+    target_actor = matches[0].lower()
+    result = []
+    for movie in movie_db:
+        if target_actor in [actor.lower() for actor in get_actors(movie)]:
+            result.append(get_title(movie))
+    return result
+
 
 
 # dummy argument is ignored and doesn't matter
@@ -201,7 +249,24 @@ def search_pa_list(src: List[str]) -> List[str]:
         a list of answers. Will be ["I don't understand"] if it finds no matches and
         ["No answers"] if it finds a match but no answers
     """
-    pass
+    answers = []
+    found = False
+
+    for pattern, action in pa_list:
+        if match(pattern, src):
+            found = True
+            result = action(match(pattern, src))
+            if not result:
+                answers.append("No answers")
+            else:
+                answers.extend(result)
+
+    if not found:
+        answers.append("I don't understand")
+
+    return answers
+
+
 
 
 def query_loop() -> None:
